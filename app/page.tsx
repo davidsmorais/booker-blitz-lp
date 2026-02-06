@@ -4,128 +4,132 @@ import Link from "next/link"
 import Navigation from "@/components/Navigation"
 import { ChevronRight } from "lucide-react"
 
-// Custom font imports (example: retro-futuristic display + editorial body)
-// Font imports removed; use CSS in globals.css and Tailwind config
+/**
+ * DESIGN 4: "NEON CYBERPUNK GRID"
+ * 
+ * Dark cyberpunk with electric neon accents
+ * - Grid-based technical aesthetic
+ * - Glowing elements
+ * - Futuristic tech-forward feel
+ */
 
 export default function Home() {
   return (
     <>
+      <style dangerouslySetInnerHTML={{__html: `
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap');
+        
+        .cyber-title {
+          font-family: 'Orbitron', sans-serif;
+          text-transform: uppercase;
+        }
+        
+        .cyber-body {
+          font-family: 'Rajdhani', sans-serif;
+        }
+        
+        .grid-bg {
+          background-image: 
+            linear-gradient(rgba(6, 182, 212, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(6, 182, 212, 0.1) 1px, transparent 1px);
+          background-size: 50px 50px;
+        }
+        
+        @keyframes scan {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(100%); }
+        }
+        
+        @keyframes glitch {
+          0%, 100% { transform: translate(0); }
+          20% { transform: translate(-2px, 2px); }
+          40% { transform: translate(-2px, -2px); }
+          60% { transform: translate(2px, 2px); }
+          80% { transform: translate(2px, -2px); }
+        }
+        
+        .scan-line {
+          animation: scan 4s linear infinite;
+        }
+        
+        .glitch:hover {
+          animation: glitch 0.3s ease-in-out;
+        }
+      `}} />
       <Navigation />
-      <main className="min-h-screen flex flex-col items-stretch justify-center relative overflow-hidden font-lora">
-        {/* Layered animated backgrounds */}
-        <div className="absolute inset-0 z-0">
-          {/* Gradient mesh */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-cyan-900 via-magenta-900/60 to-background animate-bgmesh" />
-          {/* Editorial grid overlay */}
-          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20 mix-blend-overlay" />
-          {/* Noise texture */}
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10" />
-        </div>
-
-        {/* Decorative orbs and shapes */}
-        <div className="absolute left-[-6rem] top-1/3 w-[32rem] h-[32rem] bg-cyan-400/30 rounded-full blur-[160px] animate-orb" />
-        <div className="absolute right-[-8rem] bottom-1/4 w-[40rem] h-[40rem] bg-magenta-400/30 rounded-full blur-[192px] animate-orb [animation-delay:1.5s]" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[90vw] h-24 bg-gradient-to-r from-magenta-500/30 via-cyan-500/10 to-transparent blur-[32px]" />
-
-        {/* Content: asymmetric editorial layout */}
-        <section className="relative z-10 flex flex-col md:flex-row items-center justify-between px-6 py-24 md:py-32 max-w-7xl mx-auto gap-16">
-          {/* Left: Title & tagline */}
-          <div className="flex-1 min-w-[320px] text-left">
-            <div className="mb-8">
-              <h2 className="font-major-mono-display text-[3.5rem] md:text-[6rem] font-extrabold tracking-tight leading-none bg-gradient-to-r from-cyan-300 via-magenta-400 to-cyan-500 bg-clip-text text-transparent animate-gradient drop-shadow-lg">
-                BOOKER BLITZ
-              </h2>
-              <div className="h-2 w-2/3 bg-gradient-to-r from-magenta-400 via-cyan-400 to-magenta-500 rounded-full shadow-lg mb-6 animate-bar" />
-            </div>
-            <h1 className="text-3xl md:text-5xl font-bold mb-8 text-foreground/90 font-lora tracking-tight">
-              Book Your Way to Glory
+      <main className="min-h-screen bg-black relative overflow-hidden">
+        
+        {/* Grid Background */}
+        <div className="absolute inset-0 grid-bg opacity-30" />
+        
+        {/* Scan Line Effect */}
+        <div className="scan-line absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
+        
+        {/* Glow Effects */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-magenta-500/20 rounded-full blur-[120px]" />
+        
+        <div className="relative z-10 container mx-auto px-6 py-24 min-h-screen flex flex-col justify-center max-w-7xl">
+          {/* Hero */}
+          <div className="text-center mb-20">
+            <div className="cyber-body text-cyan-400 text-sm tracking-[0.3em] mb-4">WRESTLING MANAGEMENT SYSTEM</div>
+            <h1 className="cyber-title text-8xl md:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-magenta-500 to-cyan-500 mb-8
+                           [text-shadow:_0_0_30px_rgb(6_182_212_/_50%)]">
+              BOOKER BLITZ
             </h1>
-            <p className="text-xl md:text-2xl text-foreground/80 mb-12 max-w-xl font-lora">
-              The ultimate wrestling promotion management simulator.<br />
-              <span className="text-magenta-400 font-semibold">Manage shows</span>, <span className="text-cyan-400 font-semibold">build storylines</span>, and <span className="text-magenta-400 font-semibold">create unforgettable moments</span>.
+            <div className="h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent mb-8" />
+            <p className="cyber-body text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              The ultimate wrestling promotion management simulator. <span className="text-cyan-400">Manage shows</span>, <span className="text-magenta-400">build storylines</span>, and create unforgettable moments.
             </p>
           </div>
 
-          {/* Right: Navigation Cards */}
-          <div className="flex-1 min-w-[320px] grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Link
-              href="/features"
-              className="group relative p-8 rounded-2xl border-2 border-cyan-400/30 bg-gradient-to-br from-cyan-900/40 to-background/60 shadow-lg hover:border-cyan-400 hover:bg-cyan-400/10 transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-            >
-              <div className="text-2xl font-major-mono-display font-bold mb-3 bg-gradient-to-r from-cyan-300 to-cyan-400 bg-clip-text text-transparent">
-                Features
-              </div>
-              <ChevronRight className="absolute bottom-6 right-6 w-6 h-6 text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+          {/* Navigation Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            <Link href="/features" className="group relative bg-black/50 backdrop-blur-sm border border-cyan-500/30 p-8 hover:border-cyan-500 transition-all duration-300 hover:shadow-2xl hover:shadow-cyan-500/50 glitch">
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-400" />
+              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-400" />
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-400" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-400" />
+              
+              <div className="cyber-body text-cyan-400/60 text-xs tracking-widest mb-2">MODULE_01</div>
+              <h3 className="cyber-title text-2xl font-bold text-white group-hover:text-cyan-400 transition-colors mb-4">FEATURES</h3>
+              <ChevronRight className="w-6 h-6 text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity" />
             </Link>
 
-            <Link
-              href="/roadmap"
-              className="group relative p-8 rounded-2xl border-2 border-magenta-400/30 bg-gradient-to-br from-magenta-900/40 to-background/60 shadow-lg hover:border-magenta-400 hover:bg-magenta-400/10 transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-magenta-400"
-            >
-              <div className="text-2xl font-major-mono-display font-bold mb-3 bg-gradient-to-r from-magenta-300 to-magenta-400 bg-clip-text text-transparent">
-                Roadmap
-              </div>
-              <ChevronRight className="absolute bottom-6 right-6 w-6 h-6 text-magenta-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Link href="/roadmap" className="group relative bg-black/50 backdrop-blur-sm border border-magenta-500/30 p-8 hover:border-magenta-500 transition-all duration-300 hover:shadow-2xl hover:shadow-magenta-500/50 glitch">
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-magenta-400" />
+              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-magenta-400" />
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-magenta-400" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-magenta-400" />
+              
+              <div className="cyber-body text-magenta-400/60 text-xs tracking-widest mb-2">MODULE_02</div>
+              <h3 className="cyber-title text-2xl font-bold text-white group-hover:text-magenta-400 transition-colors mb-4">ROADMAP</h3>
+              <ChevronRight className="w-6 h-6 text-magenta-400 opacity-0 group-hover:opacity-100 transition-opacity" />
             </Link>
 
-            <Link
-              href="/changelog"
-              className="group relative p-8 rounded-2xl border-2 border-cyan-400/30 bg-gradient-to-br from-cyan-900/40 to-background/60 shadow-lg hover:border-cyan-400 hover:bg-cyan-400/10 transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-            >
-              <div className="text-2xl font-major-mono-display font-bold mb-3 bg-gradient-to-r from-cyan-300 to-cyan-400 bg-clip-text text-transparent">
-                Changelog
-              </div>
-              <ChevronRight className="absolute bottom-6 right-6 w-6 h-6 text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Link href="/changelog" className="group relative bg-black/50 backdrop-blur-sm border border-cyan-500/30 p-8 hover:border-cyan-500 transition-all duration-300 hover:shadow-2xl hover:shadow-cyan-500/50 glitch">
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-400" />
+              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-400" />
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-400" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-400" />
+              
+              <div className="cyber-body text-cyan-400/60 text-xs tracking-widest mb-2">MODULE_03</div>
+              <h3 className="cyber-title text-2xl font-bold text-white group-hover:text-cyan-400 transition-colors mb-4">CHANGELOG</h3>
+              <ChevronRight className="w-6 h-6 text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity" />
             </Link>
 
-            <Link
-              href="/buy"
-              className="group relative p-8 rounded-2xl border-2 border-magenta-400 bg-gradient-to-br from-magenta-400/30 to-cyan-400/30 shadow-xl hover:from-magenta-400/50 hover:to-cyan-400/50 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-magenta-400"
-            >
-              <div className="text-2xl font-major-mono-display font-bold mb-3 bg-gradient-to-r from-magenta-300 to-cyan-300 bg-clip-text text-transparent">
-                Buy Now
+            <Link href="/buy" className="group relative bg-gradient-to-br from-cyan-500/20 to-magenta-500/20 backdrop-blur-sm border-2 border-cyan-400 p-8 hover:border-magenta-400 transition-all duration-300 hover:shadow-2xl hover:shadow-magenta-500/50 hover:scale-105 glitch">
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-magenta-500/10 to-cyan-500/10 animate-pulse" style={{animationDuration: '2s'}} />
+              
+              <div className="relative">
+                <div className="cyber-body text-white/80 text-xs tracking-widest mb-2">MODULE_04</div>
+                <h3 className="cyber-title text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-magenta-400 mb-4">BUY NOW</h3>
+                <ChevronRight className="w-6 h-6 text-white group-hover:translate-x-2 transition-transform" />
               </div>
-              <ChevronRight className="absolute bottom-6 right-6 w-6 h-6 text-magenta-400 group-hover:translate-x-2 transition-transform" />
             </Link>
           </div>
-        </section>
-
-        {/* Custom CSS for gradient, orb, and bar animations */}
-        <style jsx>{`
-          @keyframes gradient {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-          }
-          .animate-gradient {
-            background-size: 200% auto;
-            animation: gradient 3.5s cubic-bezier(.4,0,.2,1) infinite;
-          }
-          @keyframes orb {
-            0%, 100% { transform: scale(1) translateY(0); }
-            50% { transform: scale(1.08) translateY(16px); }
-          }
-          .animate-orb {
-            animation: orb 4s ease-in-out infinite;
-          }
-          @keyframes bar {
-            0% { width: 0; }
-            100% { width: 66%; }
-          }
-          .animate-bar {
-            animation: bar 1.2s cubic-bezier(.7,0,.3,1) forwards;
-          }
-          @keyframes bgmesh {
-            0% { filter: blur(0px) brightness(1); }
-            50% { filter: blur(8px) brightness(1.1); }
-            100% { filter: blur(0px) brightness(1); }
-          }
-          .animate-bgmesh {
-            animation: bgmesh 6s ease-in-out infinite;
-          }
-        `}</style>
+        </div>
       </main>
     </>
   )
-// ...existing code...
-
 }
