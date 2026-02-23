@@ -12,6 +12,7 @@ const Navigation = () => {
     { href: "/features", label: "Features" },
     { href: "/roadmap", label: "Roadmap" },
     { href: "/changelog", label: "Changelog" },
+    { href: "/discussions", label: "Discussions" },
     { href: "/buy", label: "Buy Now" },
   ]
 
