@@ -307,30 +307,6 @@ export default function Discussions() {
             </div>
           )}
 
-          {/* SQL schema hint */}
-          <div className="mt-12 relative bg-black/40 backdrop-blur-sm border border-gray-800 p-6">
-            <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-gray-700" />
-            <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-gray-700" />
-            <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-gray-700" />
-            <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-gray-700" />
-            <p className="cyber-body text-xs text-gray-600 tracking-widest mb-3">// SUPABASE TABLE SCHEMA (run once in your Supabase SQL editor)</p>
-            <pre className="cyber-body text-xs text-gray-600 overflow-x-auto leading-relaxed">{`create table posts (
-  id         uuid primary key default gen_random_uuid(),
-  title      text not null,
-  content    text not null,
-  author     text not null,
-  category   text not null check (category in ('announcement','community','bug_report')),
-  upvotes    int  not null default 0,
-  pinned     bool not null default false,
-  created_at timestamptz not null default now()
-);
-
-alter table posts enable row level security;
-create policy "Public read"   on posts for select using (true);
-create policy "Public insert" on posts for insert with check (true);
-create policy "Public update" on posts for update using (true);`}</pre>
-          </div>
-
         </div>
       </main>
     </>
