@@ -84,7 +84,7 @@ export default function Home() {
           </div>
 
           {/* Navigation Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-6xl mx-auto">
             <Link href="/features" className="group relative bg-black/50 backdrop-blur-sm border border-cyan-500/30 p-8 hover:border-cyan-500 transition-all duration-300 hover:shadow-2xl hover:shadow-cyan-500/50 glitch">
               <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-400" />
               <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-400" />
@@ -118,11 +118,22 @@ export default function Home() {
               <ChevronRight className="w-6 h-6 text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity" />
             </Link>
 
+            <Link href="/discussions" className="group relative bg-black/50 backdrop-blur-sm border border-magenta-500/30 p-8 hover:border-magenta-500 transition-all duration-300 hover:shadow-2xl hover:shadow-magenta-500/50 glitch">
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-magenta-400" />
+              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-magenta-400" />
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-magenta-400" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-magenta-400" />
+
+              <div className="cyber-body text-magenta-400/60 text-xs tracking-widest mb-2">MODULE_04</div>
+              <h3 className="cyber-title text-2xl font-bold text-white group-hover:text-magenta-400 transition-colors mb-4">DISCUSSIONS</h3>
+              <ChevronRight className="w-6 h-6 text-magenta-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </Link>
+
             <Link href="/buy" className="group relative bg-gradient-to-br from-cyan-500/20 to-magenta-500/20 backdrop-blur-sm border-2 border-cyan-400 p-8 hover:border-magenta-400 transition-all duration-300 hover:shadow-2xl hover:shadow-magenta-500/50 hover:scale-105 glitch">
               <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-magenta-500/10 to-cyan-500/10 animate-pulse" style={{animationDuration: '2s'}} />
               
               <div className="relative">
-                <div className="cyber-body text-white/80 text-xs tracking-widest mb-2">MODULE_04</div>
+                <div className="cyber-body text-white/80 text-xs tracking-widest mb-2">MODULE_05</div>
                 <h3 className="cyber-title text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-magenta-400 mb-4">BUY NOW</h3>
                 <ChevronRight className="w-6 h-6 text-white group-hover:translate-x-2 transition-transform" />
               </div>
