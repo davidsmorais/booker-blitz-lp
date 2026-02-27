@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react"
 import Navigation from "@/components/Navigation"
 import { supabase, type Post, type PostCategory } from "@/lib/supabase"
-import { Megaphone, Users, Bug, ChevronUp, Plus, X, Loader2, Pin } from "lucide-react"
+import { Megaphone, Users, Bug, ChevronUp, Plus, X, Loader2, Pin, LogOut, ShieldCheck } from "lucide-react"
+import type { Session } from "@supabase/supabase-js"
 
 const TABS: { id: PostCategory; label: string; icon: React.ElementType; color: string }[] = [
   { id: "announcement", label: "Announcements",       icon: Megaphone, color: "cyan"    },
@@ -54,6 +55,8 @@ const CARD_BORDER_MAP: Record<string, string> = {
 }
 
 export default function Discussions() {
+  const [session, setSession]       = useState<Session | null>(null)
+  const [authLoading, setAuthLoading] = useState(true)
   const [activeTab, setActiveTab]   = useState<PostCategory>("announcement")
   const [posts, setPosts]           = useState<Post[]>([])
   const [loading, setLoading]       = useState(true)
@@ -61,9 +64,43 @@ export default function Discussions() {
   const [showForm, setShowForm]     = useState(false)
   const [error, setError]           = useState<string | null>(null)
   const [form, setForm]             = useState({ title: "", content: "", author: "" })
+  const [loginForm, setLoginForm]   = useState({ email: "", password: "" })
+  const [loginError, setLoginError] = useState<string | null>(null)
+  const [loginLoading, setLoginLoading] = useState(false)
 
   const activeTabData = TABS.find((t) => t.id === activeTab)!
   const tabColor = activeTabData.color
+
+  const isAdmin = session?.user?.app_metadata?.role === "admin"
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s)
+      setAuthLoading(false)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoginError(null)
+    setLoginLoading(true)
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: loginForm.email.trim(),
+      password: loginForm.password,
+    })
+    if (signInError) {
+      setLoginError(signInError.message)
+    }
+    setLoginLoading(false)
+  }
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+  }
 
   const fetchPosts = useCallback(async () => {
     setLoading(true)
@@ -165,146 +202,218 @@ export default function Discussions() {
             </p>
           </div>
 
-          {/* Tabs */}
-          <div className="flex flex-wrap gap-2 mb-8 border-b border-cyan-500/20">
-            {TABS.map((tab) => {
-              const Icon = tab.icon
-              const active = activeTab === tab.id
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => { setActiveTab(tab.id); setShowForm(false) }}
-                  className={`relative cyber-body text-sm font-bold tracking-widest px-6 py-3 flex items-center gap-2 transition-all duration-300
-                    ${active
-                      ? TAB_ACTIVE_MAP[tab.color]
-                      : "text-gray-400 hover:text-gray-200 border border-transparent"
-                    }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {tab.label}
-                  {active && (
-                    <span className={`absolute bottom-0 left-0 right-0 h-0.5 ${TAB_ACCENT_MAP[tab.color]}`} />
-                  )}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Action bar */}
-          <div className="flex justify-between items-center mb-6">
-            <div className={`cyber-body text-xs tracking-widest ${TEXT_MAP[tabColor]}`}>
-              {activeTabData.label.toUpperCase()} / THREAD_LIST
-            </div>
-            {activeTab !== "announcement" && (
-              <button
-                onClick={() => setShowForm((v) => !v)}
-                className={`flex items-center gap-2 cyber-body text-xs font-bold tracking-widest px-5 py-2.5 border transition-all duration-300
-                  ${showForm
-                    ? "border-gray-600 text-gray-400 hover:border-gray-400"
-                    : `${COLOR_MAP[tabColor]} ${TEXT_MAP[tabColor]} hover:shadow-lg ${GLOW_MAP[tabColor]}`
-                  }`}
-              >
-                {showForm
-                  ? <><X className="w-4 h-4" /> CANCEL</>
-                  : <><Plus className="w-4 h-4" /> NEW POST</>
-                }
-              </button>
-            )}
-          </div>
-
-          {/* New-post form */}
-          {showForm && activeTab !== "announcement" && (
-            <div className={`relative bg-black/60 backdrop-blur-sm border ${COLOR_MAP[tabColor]} p-6 mb-8 fade-in`}>
-              <div className={`absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 ${COLOR_MAP[tabColor]}`} />
-              <div className={`absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 ${COLOR_MAP[tabColor]}`} />
-              <div className={`absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 ${COLOR_MAP[tabColor]}`} />
-              <div className={`absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 ${COLOR_MAP[tabColor]}`} />
-              <h3 className={`cyber-title text-lg font-bold ${TEXT_MAP[tabColor]} mb-6`}>NEW POST</h3>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="cyber-body text-xs tracking-widest text-gray-400 block mb-1">YOUR NAME</label>
-                  <input
-                    type="text"
-                    value={form.author}
-                    onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
-                    placeholder="e.g. BookerFan99"
-                    className="w-full bg-black border border-gray-600 focus:outline-none focus:border-cyan-500 text-white cyber-body px-4 py-2.5 text-sm placeholder:text-gray-600"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="cyber-body text-xs tracking-widest text-gray-400 block mb-1">TITLE</label>
-                  <input
-                    type="text"
-                    value={form.title}
-                    onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                    placeholder={activeTab === "community" ? "My awesome datapack..." : "Describe the bug briefly..."}
-                    className="w-full bg-black border border-gray-600 focus:outline-none focus:border-cyan-500 text-white cyber-body px-4 py-2.5 text-sm placeholder:text-gray-600"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="cyber-body text-xs tracking-widest text-gray-400 block mb-1">DETAILS</label>
-                  <textarea
-                    rows={5}
-                    value={form.content}
-                    onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-                    placeholder={activeTab === "bug_report"
-                      ? "Steps to reproduce, expected vs actual behaviour..."
-                      : "Describe your creation, share links, screenshots..."}
-                    className="w-full bg-black border border-gray-600 focus:outline-none focus:border-cyan-500 text-white cyber-body px-4 py-2.5 text-sm placeholder:text-gray-600 resize-none"
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className={`flex items-center gap-2 cyber-body text-xs font-bold tracking-widest px-8 py-3 border transition-all duration-300 disabled:opacity-50
-                    ${COLOR_MAP[tabColor]} ${TEXT_MAP[tabColor]} hover:shadow-lg ${GLOW_MAP[tabColor]}`}
-                >
-                  {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> SUBMITTING…</> : "SUBMIT POST"}
-                </button>
-              </form>
-            </div>
-          )}
-
-          {/* Posts */}
-          {loading ? (
+          {/* Auth loading */}
+          {authLoading ? (
             <div className="flex justify-center items-center py-24">
               <Loader2 className="w-10 h-10 text-cyan-400 animate-spin" />
             </div>
-          ) : error ? (
-            <div className="relative bg-black/50 backdrop-blur-sm border border-yellow-500/40 p-8 text-center fade-in">
-              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-yellow-400" />
-              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-yellow-400" />
-              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-yellow-400" />
-              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-yellow-400" />
-              <p className="cyber-body text-yellow-400 text-lg font-bold mb-2">DATABASE NOT CONNECTED</p>
-              <p className="cyber-body text-gray-400 text-sm">{error}</p>
-              <p className="cyber-body text-gray-500 text-xs mt-4">
-                Set <span className="text-cyan-400">NEXT_PUBLIC_SUPABASE_URL</span> and{" "}
-                <span className="text-cyan-400">NEXT_PUBLIC_SUPABASE_ANON_KEY</span> to activate.
-              </p>
-            </div>
-          ) : posts.length === 0 ? (
-            <div className="relative bg-black/50 backdrop-blur-sm border border-cyan-500/20 p-12 text-center fade-in">
-              <div className={`absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 ${COLOR_MAP[tabColor]}`} />
-              <div className={`absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 ${COLOR_MAP[tabColor]}`} />
-              <div className={`absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 ${COLOR_MAP[tabColor]}`} />
-              <div className={`absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 ${COLOR_MAP[tabColor]}`} />
-              <p className={`cyber-title text-2xl ${TEXT_MAP[tabColor]} mb-3`}>NO POSTS YET</p>
-              <p className="cyber-body text-gray-400">
-                {activeTab === "announcement"
-                  ? "No announcements have been posted yet. Check back soon!"
-                  : "Be the first to post in this section!"}
-              </p>
+          ) : !session ? (
+            /* Login form */
+            <div className="max-w-md mx-auto fade-in">
+              <div className="relative bg-black/60 backdrop-blur-sm border border-cyan-500/50 p-8">
+                <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-500" />
+                <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-500" />
+                <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-500" />
+                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-500" />
+                <h2 className="cyber-title text-2xl font-bold text-cyan-400 mb-2">ACCESS REQUIRED</h2>
+                <p className="cyber-body text-gray-400 text-sm mb-6">Sign in to view and participate in discussions.</p>
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div>
+                    <label className="cyber-body text-xs tracking-widest text-gray-400 block mb-1">EMAIL</label>
+                    <input
+                      type="email"
+                      value={loginForm.email}
+                      onChange={(e) => setLoginForm((f) => ({ ...f, email: e.target.value }))}
+                      placeholder="your@email.com"
+                      className="w-full bg-black border border-gray-600 focus:outline-none focus:border-cyan-500 text-white cyber-body px-4 py-2.5 text-sm placeholder:text-gray-600"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="cyber-body text-xs tracking-widest text-gray-400 block mb-1">PASSWORD</label>
+                    <input
+                      type="password"
+                      value={loginForm.password}
+                      onChange={(e) => setLoginForm((f) => ({ ...f, password: e.target.value }))}
+                      placeholder="••••••••"
+                      className="w-full bg-black border border-gray-600 focus:outline-none focus:border-cyan-500 text-white cyber-body px-4 py-2.5 text-sm placeholder:text-gray-600"
+                      required
+                    />
+                  </div>
+                  {loginError && (
+                    <p className="cyber-body text-red-400 text-xs tracking-wide">{loginError}</p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={loginLoading}
+                    className="w-full flex items-center justify-center gap-2 cyber-body text-xs font-bold tracking-widest px-8 py-3 border border-cyan-500 text-cyan-400 hover:shadow-lg hover:shadow-cyan-500/50 transition-all duration-300 disabled:opacity-50"
+                  >
+                    {loginLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> SIGNING IN…</> : "SIGN IN"}
+                  </button>
+                </form>
+              </div>
             </div>
           ) : (
-            <div className="space-y-4">
-              {posts.map((post, i) => (
-                <PostCard key={post.id} post={post} index={i} tabColor={tabColor} onUpvote={handleUpvote} />
-              ))}
-            </div>
+            /* Authenticated content */
+            <>
+              {/* User bar */}
+              <div className="flex items-center justify-end gap-3 mb-8">
+                {isAdmin && (
+                  <span className="flex items-center gap-1.5 cyber-body text-xs font-bold tracking-widest text-yellow-400 border border-yellow-500/50 px-3 py-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5" /> ADMIN
+                  </span>
+                )}
+                <span className="cyber-body text-xs text-gray-400 tracking-widest">{session.user.email ?? session.user.id}</span>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-1.5 cyber-body text-xs font-bold tracking-widest px-4 py-1.5 border border-gray-600 text-gray-400 hover:border-gray-400 hover:text-white transition-all duration-300"
+                >
+                  <LogOut className="w-3.5 h-3.5" /> SIGN OUT
+                </button>
+              </div>
+
+              {/* Tabs */}
+              <div className="flex flex-wrap gap-2 mb-8 border-b border-cyan-500/20">
+                {TABS.map((tab) => {
+                  const Icon = tab.icon
+                  const active = activeTab === tab.id
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => { setActiveTab(tab.id); setShowForm(false) }}
+                      className={`relative cyber-body text-sm font-bold tracking-widest px-6 py-3 flex items-center gap-2 transition-all duration-300
+                        ${active
+                          ? TAB_ACTIVE_MAP[tab.color]
+                          : "text-gray-400 hover:text-gray-200 border border-transparent"
+                        }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {tab.label}
+                      {active && (
+                        <span className={`absolute bottom-0 left-0 right-0 h-0.5 ${TAB_ACCENT_MAP[tab.color]}`} />
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* Action bar */}
+              <div className="flex justify-between items-center mb-6">
+                <div className={`cyber-body text-xs tracking-widest ${TEXT_MAP[tabColor]}`}>
+                  {activeTabData.label.toUpperCase()} / THREAD_LIST
+                </div>
+                {activeTab !== "announcement" && (
+                  <button
+                    onClick={() => setShowForm((v) => !v)}
+                    className={`flex items-center gap-2 cyber-body text-xs font-bold tracking-widest px-5 py-2.5 border transition-all duration-300
+                      ${showForm
+                        ? "border-gray-600 text-gray-400 hover:border-gray-400"
+                        : `${COLOR_MAP[tabColor]} ${TEXT_MAP[tabColor]} hover:shadow-lg ${GLOW_MAP[tabColor]}`
+                      }`}
+                  >
+                    {showForm
+                      ? <><X className="w-4 h-4" /> CANCEL</>
+                      : <><Plus className="w-4 h-4" /> NEW POST</>
+                    }
+                  </button>
+                )}
+              </div>
+
+              {/* New-post form */}
+              {showForm && activeTab !== "announcement" && (
+                <div className={`relative bg-black/60 backdrop-blur-sm border ${COLOR_MAP[tabColor]} p-6 mb-8 fade-in`}>
+                  <div className={`absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 ${COLOR_MAP[tabColor]}`} />
+                  <div className={`absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 ${COLOR_MAP[tabColor]}`} />
+                  <div className={`absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 ${COLOR_MAP[tabColor]}`} />
+                  <div className={`absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 ${COLOR_MAP[tabColor]}`} />
+                  <h3 className={`cyber-title text-lg font-bold ${TEXT_MAP[tabColor]} mb-6`}>NEW POST</h3>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <label className="cyber-body text-xs tracking-widest text-gray-400 block mb-1">YOUR NAME</label>
+                      <input
+                        type="text"
+                        value={form.author}
+                        onChange={(e) => setForm((f) => ({ ...f, author: e.target.value }))}
+                        placeholder="e.g. BookerFan99"
+                        className="w-full bg-black border border-gray-600 focus:outline-none focus:border-cyan-500 text-white cyber-body px-4 py-2.5 text-sm placeholder:text-gray-600"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="cyber-body text-xs tracking-widest text-gray-400 block mb-1">TITLE</label>
+                      <input
+                        type="text"
+                        value={form.title}
+                        onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                        placeholder={activeTab === "community" ? "My awesome datapack..." : "Describe the bug briefly..."}
+                        className="w-full bg-black border border-gray-600 focus:outline-none focus:border-cyan-500 text-white cyber-body px-4 py-2.5 text-sm placeholder:text-gray-600"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="cyber-body text-xs tracking-widest text-gray-400 block mb-1">DETAILS</label>
+                      <textarea
+                        rows={5}
+                        value={form.content}
+                        onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+                        placeholder={activeTab === "bug_report"
+                          ? "Steps to reproduce, expected vs actual behaviour..."
+                          : "Describe your creation, share links, screenshots..."}
+                        className="w-full bg-black border border-gray-600 focus:outline-none focus:border-cyan-500 text-white cyber-body px-4 py-2.5 text-sm placeholder:text-gray-600 resize-none"
+                        required
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className={`flex items-center gap-2 cyber-body text-xs font-bold tracking-widest px-8 py-3 border transition-all duration-300 disabled:opacity-50
+                        ${COLOR_MAP[tabColor]} ${TEXT_MAP[tabColor]} hover:shadow-lg ${GLOW_MAP[tabColor]}`}
+                    >
+                      {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> SUBMITTING…</> : "SUBMIT POST"}
+                    </button>
+                  </form>
+                </div>
+              )}
+
+              {/* Posts */}
+              {loading ? (
+                <div className="flex justify-center items-center py-24">
+                  <Loader2 className="w-10 h-10 text-cyan-400 animate-spin" />
+                </div>
+              ) : error ? (
+                <div className="relative bg-black/50 backdrop-blur-sm border border-yellow-500/40 p-8 text-center fade-in">
+                  <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-yellow-400" />
+                  <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-yellow-400" />
+                  <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-yellow-400" />
+                  <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-yellow-400" />
+                  <p className="cyber-body text-yellow-400 text-lg font-bold mb-2">DATABASE NOT CONNECTED</p>
+                  <p className="cyber-body text-gray-400 text-sm">{error}</p>
+                  <p className="cyber-body text-gray-500 text-xs mt-4">
+                    Set <span className="text-cyan-400">NEXT_PUBLIC_SUPABASE_URL</span> and{" "}
+                    <span className="text-cyan-400">NEXT_PUBLIC_SUPABASE_ANON_KEY</span> to activate.
+                  </p>
+                </div>
+              ) : posts.length === 0 ? (
+                <div className="relative bg-black/50 backdrop-blur-sm border border-cyan-500/20 p-12 text-center fade-in">
+                  <div className={`absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 ${COLOR_MAP[tabColor]}`} />
+                  <div className={`absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 ${COLOR_MAP[tabColor]}`} />
+                  <div className={`absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 ${COLOR_MAP[tabColor]}`} />
+                  <div className={`absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 ${COLOR_MAP[tabColor]}`} />
+                  <p className={`cyber-title text-2xl ${TEXT_MAP[tabColor]} mb-3`}>NO POSTS YET</p>
+                  <p className="cyber-body text-gray-400">
+                    {activeTab === "announcement"
+                      ? "No announcements have been posted yet. Check back soon!"
+                      : "Be the first to post in this section!"}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {posts.map((post, i) => (
+                    <PostCard key={post.id} post={post} index={i} tabColor={tabColor} onUpvote={handleUpvote} />
+                  ))}
+                </div>
+              )}
+            </>
           )}
 
         </div>
